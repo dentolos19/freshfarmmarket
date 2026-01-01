@@ -1,0 +1,83 @@
+@model FreshFarmMarket.Models.LoginViewModel
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = "Login";
+    ViewData["RecaptchaSiteKey"] = Configuration["ReCaptcha:SiteKey"];
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">🥬 Login to Fresh Farm Market</h4>
+            </div>
+            <div class="card-body">
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success">
+                        @TempData["SuccessMessage"]
+                    </div>
+                }
+
+                <form asp-action="Login" method="post" id="loginForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
+                    
+                    <div asp-validation-summary="All" class="text-danger alert alert-danger" style="display: @(ViewData.ModelState.ErrorCount > 0 ? "block" : "none")"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control" placeholder="john@example.com" autofocus />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label"></label>
+                        <input asp-for="Password" class="form-control" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input asp-for="RememberMe" class="form-check-input" />
+                        <label asp-for="RememberMe" class="form-check-label"></label>
+                    </div>
+
+                    <input type="hidden" asp-for="RecaptchaToken" id="recaptchaToken" />
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">Login</button>
+                    </div>
+                </form>
+
+                <hr />
+                <p class="text-center mb-0">
+                    Don't have an account? <a asp-action="Register">Register here</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // reCAPTCHA v3
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var form = this;
+            var siteKey = '@Configuration["ReCaptcha:SiteKey"]';
+            
+            if (siteKey && siteKey !== 'YOUR_RECAPTCHA_SITE_KEY') {
+                grecaptcha.ready(function() {
+                    grecaptcha.execute(siteKey, {action: 'login'}).then(function(token) {
+                        document.getElementById('recaptchaToken').value = token;
+                        form.submit();
+                    });
+                });
+            } else {
+                document.getElementById('recaptchaToken').value = 'development-token';
+                form.submit();
+            }
+        });
+    </script>
+}

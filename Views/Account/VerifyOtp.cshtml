@@ -1,0 +1,53 @@
+@model FreshFarmMarket.Models.VerifyOtpViewModel
+@{
+    ViewData["Title"] = "Verify OTP";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">🔐 Two-Factor Authentication</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <strong>Check your email!</strong><br/>
+                    We've sent a 6-digit verification code to <strong>@Model.Email</strong>
+                </div>
+
+                <form asp-action="VerifyOtp" method="post">
+                    @Html.AntiForgeryToken()
+                    
+                    <div asp-validation-summary="All" class="text-danger alert alert-danger" style="display: @(ViewData.ModelState.ErrorCount > 0 ? "block" : "none")"></div>
+
+                    <div class="mb-4">
+                        <label asp-for="Otp" class="form-label">Enter Verification Code</label>
+                        <input asp-for="Otp" class="form-control form-control-lg text-center" 
+                               placeholder="000000" maxlength="6" pattern="\d{6}" autofocus 
+                               style="letter-spacing: 10px; font-size: 24px;" />
+                        <span asp-validation-for="Otp" class="text-danger"></span>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">Verify & Login</button>
+                    </div>
+                </form>
+
+                <hr />
+                <p class="text-center text-muted mb-0">
+                    <small>The code expires in 5 minutes. <a asp-action="Login">Return to Login</a></small>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Auto-focus and auto-submit when 6 digits entered
+        document.querySelector('input[name="Otp"]').addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '');
+        });
+    </script>
+}

@@ -1,0 +1,174 @@
+@model FreshFarmMarket.Models.RegisterViewModel
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = "Register";
+    ViewData["RecaptchaSiteKey"] = Configuration["ReCaptcha:SiteKey"];
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">🥬 Create Your Fresh Farm Market Account</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Register" method="post" enctype="multipart/form-data" id="registerForm">
+                    @Html.AntiForgeryToken()
+                    
+                    <div asp-validation-summary="All" class="text-danger alert alert-danger" style="display: @(ViewData.ModelState.ErrorCount > 0 ? "block" : "none")"></div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="FullName" class="form-label"></label>
+                            <input asp-for="FullName" class="form-control" placeholder="John Doe" />
+                            <span asp-validation-for="FullName" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Email" class="form-label"></label>
+                            <input asp-for="Email" class="form-control" placeholder="john@example.com" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Password" class="form-label"></label>
+                            <input asp-for="Password" class="form-control" id="password" />
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                            <div id="passwordStrength" class="mt-2">
+                                <div class="progress" style="height: 5px;">
+                                    <div id="strengthBar" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                                </div>
+                                <small id="strengthText" class="text-muted"></small>
+                            </div>
+                            <small class="text-muted">
+                                Min 12 chars with uppercase, lowercase, number, and special character
+                            </small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ConfirmPassword" class="form-label"></label>
+                            <input asp-for="ConfirmPassword" class="form-control" />
+                            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Gender" class="form-label"></label>
+                            <select asp-for="Gender" class="form-select">
+                                <option value="">Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                                <option value="Prefer not to say">Prefer not to say</option>
+                            </select>
+                            <span asp-validation-for="Gender" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="MobileNumber" class="form-label"></label>
+                            <input asp-for="MobileNumber" class="form-control" placeholder="+1234567890" />
+                            <span asp-validation-for="MobileNumber" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="DeliveryAddress" class="form-label"></label>
+                        <textarea asp-for="DeliveryAddress" class="form-control" rows="2" placeholder="123 Farm Street, Green Valley, CA 90210"></textarea>
+                        <span asp-validation-for="DeliveryAddress" class="text-danger"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="CreditCardNumber" class="form-label"></label>
+                            <input asp-for="CreditCardNumber" class="form-control" placeholder="4111111111111111" />
+                            <span asp-validation-for="CreditCardNumber" class="text-danger"></span>
+                            <small class="text-muted">Your card will be encrypted securely</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Photo" class="form-label"></label>
+                            <input asp-for="Photo" type="file" class="form-control" accept=".jpg,.jpeg" />
+                            <span asp-validation-for="Photo" class="text-danger"></span>
+                            <small class="text-muted">Only .JPG files allowed (max 5MB)</small>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="AboutMe" class="form-label"></label>
+                        <textarea asp-for="AboutMe" class="form-control" rows="3" placeholder="Tell us about yourself..."></textarea>
+                        <span asp-validation-for="AboutMe" class="text-danger"></span>
+                    </div>
+
+                    <input type="hidden" asp-for="RecaptchaToken" id="recaptchaToken" />
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">Create Account</button>
+                    </div>
+                </form>
+
+                <hr />
+                <p class="text-center mb-0">
+                    Already have an account? <a asp-action="Login">Login here</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Password strength meter
+        document.getElementById('password').addEventListener('input', function() {
+            var password = this.value;
+            var strength = 0;
+            var text = '';
+            var color = '';
+
+            if (password.length >= 12) strength += 25;
+            if (/[a-z]/.test(password)) strength += 25;
+            if (/[A-Z]/.test(password)) strength += 25;
+            if (/\d/.test(password)) strength += 12.5;
+            if (/[^a-zA-Z\d]/.test(password)) strength += 12.5;
+
+            if (strength < 25) {
+                text = 'Very Weak';
+                color = 'bg-danger';
+            } else if (strength < 50) {
+                text = 'Weak';
+                color = 'bg-warning';
+            } else if (strength < 75) {
+                text = 'Good';
+                color = 'bg-info';
+            } else if (strength < 100) {
+                text = 'Strong';
+                color = 'bg-primary';
+            } else {
+                text = 'Very Strong';
+                color = 'bg-success';
+            }
+
+            document.getElementById('strengthBar').style.width = strength + '%';
+            document.getElementById('strengthBar').className = 'progress-bar ' + color;
+            document.getElementById('strengthText').textContent = text;
+        });
+
+        // reCAPTCHA v3
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var form = this;
+            var siteKey = '@Configuration["ReCaptcha:SiteKey"]';
+            
+            if (siteKey && siteKey !== 'YOUR_RECAPTCHA_SITE_KEY') {
+                grecaptcha.ready(function() {
+                    grecaptcha.execute(siteKey, {action: 'register'}).then(function(token) {
+                        document.getElementById('recaptchaToken').value = token;
+                        form.submit();
+                    });
+                });
+            } else {
+                document.getElementById('recaptchaToken').value = 'development-token';
+                form.submit();
+            }
+        });
+    </script>
+}
