@@ -3,6 +3,7 @@ using FreshFarmMarket.Entities;
 using FreshFarmMarket.Services;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
+using Resend;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -68,6 +69,13 @@ builder.Services.AddMemoryCache();
 
 // Add HttpClient for reCAPTCHA
 builder.Services.AddHttpClient();
+
+// Configure Resend for email service
+builder.Services.Configure<ResendClientOptions>(options =>
+{
+    options.ApiToken = builder.Configuration["Resend:ApiKey"];
+});
+builder.Services.AddScoped<ResendClient>();
 
 // Register application services
 builder.Services.AddScoped<IDataProtectionService, DataProtectionService>();

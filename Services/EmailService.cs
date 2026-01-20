@@ -1,5 +1,4 @@
-using System.Net;
-using System.Net.Mail;
+using Resend;
 
 namespace FreshFarmMarket.Services;
 
@@ -10,26 +9,25 @@ public interface IEmailService
 
 public class EmailService : IEmailService
 {
+    private readonly ResendClient _resendClient;
     private readonly IConfiguration _configuration;
     private readonly ILogger<EmailService> _logger;
 
-    public EmailService(IConfiguration configuration, ILogger<EmailService> logger)
+    public EmailService(ResendClient resendClient, IConfiguration configuration, ILogger<EmailService> logger)
     {
+        _resendClient = resendClient;
         _configuration = configuration;
         _logger = logger;
     }
 
     public async Task SendOtpAsync(string email, string otp)
     {
-        var smtpServer = _configuration["Email:SmtpServer"];
-        var smtpPort = int.Parse(_configuration["Email:SmtpPort"] ?? "587");
-        var senderEmail = _configuration["Email:SenderEmail"];
-        var senderName = _configuration["Email:SenderName"];
-        var username = _configuration["Email:Username"];
-        var password = _configuration["Email:Password"];
+        var apiKey = _configuration["Resend:ApiKey"];
+        var senderEmail = _configuration["Resend:SenderEmail"];
+        var senderName = _configuration["Resend:SenderName"];
 
         // For development, just log the OTP
-        if (string.IsNullOrEmpty(smtpServer) || smtpServer == "smtp.example.com")
+        if (string.IsNullOrEmpty(apiKey) || apiKey == "YOUR_RESEND_API_KEY")
         {
             _logger.LogWarning("DEVELOPMENT MODE: OTP for {Email} is {Otp}", email, otp);
             return;
@@ -37,15 +35,12 @@ public class EmailService : IEmailService
 
         try
         {
-            using var client = new SmtpClient(smtpServer, smtpPort);
-            client.EnableSsl = true;
-            client.Credentials = new NetworkCredential(username, password);
-
-            var mailMessage = new MailMessage
+            var message = new EmailMessage
             {
-                From = new MailAddress(senderEmail ?? "noreply@freshfarmmarket.com", senderName ?? "Fresh Farm Market"),
+                From = $"{senderName ?? "Fresh Farm Market"} <{senderEmail ?? "onboarding@resend.dev"}>",
+                To = [email],
                 Subject = "Your Fresh Farm Market Login OTP",
-                Body =
+                HtmlBody =
                     $@"
                     <html>
                     <body>
@@ -58,16 +53,14 @@ public class EmailService : IEmailService
                         <p>Best regards,<br/>Fresh Farm Market Team</p>
                     </body>
                     </html>",
-                IsBodyHtml = true,
             };
-            mailMessage.To.Add(email);
 
-            await client.SendMailAsync(mailMessage);
-            _logger.LogInformation("OTP email sent to {Email}", email);
+            await _resendClient.EmailSendAsync(message);
+            _logger.LogInformation("OTP email sent to {Email} via Resend", email);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to send OTP email to {Email}", email);
+            _logger.LogError(ex, "Failed to send OTP email to {Email} via Resend", email);
             throw;
         }
     }
