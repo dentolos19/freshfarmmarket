@@ -6,6 +6,7 @@
 bin/
 obj/
 DataProtection-Keys/
+wwwroot/uploads/**
 *.db*
 
 # User files
