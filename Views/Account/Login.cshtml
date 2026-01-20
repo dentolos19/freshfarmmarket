@@ -60,6 +60,7 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="https://www.google.com/recaptcha/api.js?render=@ViewData["RecaptchaSiteKey"]"></script>
     <script>
         // reCAPTCHA v3
         document.getElementById('loginForm').addEventListener('submit', function (e) {

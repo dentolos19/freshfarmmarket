@@ -116,6 +116,7 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="https://www.google.com/recaptcha/api.js?render=@ViewData["RecaptchaSiteKey"]"></script>
     <script>
         // Password strength meter
         document.getElementById('password').addEventListener('input', function () {

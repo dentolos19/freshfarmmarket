@@ -86,11 +86,22 @@ public class RecaptchaService : IRecaptchaService
 
     private class RecaptchaResponse
     {
+        [System.Text.Json.Serialization.JsonPropertyName("success")]
         public bool Success { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("score")]
         public double Score { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("action")]
         public string? Action { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("challenge_ts")]
         public string? ChallengeTs { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("hostname")]
         public string? Hostname { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("error-codes")]
         public string[]? ErrorCodes { get; set; }
     }
 }
