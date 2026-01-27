@@ -384,16 +384,17 @@ public class AccountController : Controller
             return RedirectToAction("Login");
         }
 
-        // Check minimum password age (5 minutes)
+        // Check minimum password age
+        var minPasswordAgeMinutes = _configuration.GetValue<int>("PasswordPolicy:MinPasswordAgeMinutes", 5);
         if (user.LastPasswordChangedAt.HasValue)
         {
             var timeSinceLastChange = DateTime.UtcNow - user.LastPasswordChangedAt.Value;
-            if (timeSinceLastChange.TotalMinutes < 5)
+            if (timeSinceLastChange.TotalMinutes < minPasswordAgeMinutes)
             {
-                var remainingMinutes = 5 - (int)timeSinceLastChange.TotalMinutes;
+                var remainingMinutes = minPasswordAgeMinutes - (int)timeSinceLastChange.TotalMinutes;
                 ModelState.AddModelError(
                     string.Empty,
-                    $"You can only change your password once every 5 minutes. Please wait {remainingMinutes} more minute(s)."
+                    $"You can only change your password once every {minPasswordAgeMinutes} minutes. Please wait {remainingMinutes} more minute(s)."
                 );
                 return View(model);
             }
