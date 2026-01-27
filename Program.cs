@@ -7,7 +7,7 @@ using Resend;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Add services to the container
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<AuthDbContext>();
 
@@ -28,7 +28,7 @@ builder
         options.Password.RequireNonAlphanumeric = true;
         options.Password.RequiredLength = 12;
 
-        // Lockout settings - 3 attempts, 10 minutes lockout
+        // Lockout settings
         options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);
         options.Lockout.MaxFailedAccessAttempts = 3;
         options.Lockout.AllowedForNewUsers = true;
@@ -87,12 +87,11 @@ builder.Services.AddScoped<ISessionService, SessionService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure the HTTP request pipeline
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // HSTS with 1 year max-age
-    app.UseHsts();
+    app.UseHsts(); // HSTS with 1 year max-age
 }
 
 // Custom middleware to remove security-sensitive headers
@@ -111,18 +110,13 @@ app.Use(
     }
 );
 
-// Custom error pages
 app.UseStatusCodePagesWithReExecute("/Home/Error", "?statusCode={0}");
-
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
-
 app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
