@@ -68,6 +68,9 @@ builder.Services.AddMemoryCache();
 // Add HttpClient for reCAPTCHA
 builder.Services.AddHttpClient();
 
+// Add HttpContextAccessor for audit logging
+builder.Services.AddHttpContextAccessor();
+
 // Configure Resend for email service
 builder.Services.Configure<ResendClientOptions>(options =>
 {

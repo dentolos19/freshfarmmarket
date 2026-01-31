@@ -124,6 +124,7 @@ public class AccountController : Controller
             var hashedPassword = _userManager.PasswordHasher.HashPassword(user, model.Password);
             await _passwordHistoryService.AddPasswordToHistoryAsync(user.Id, hashedPassword);
 
+            await _auditLogService.LogRegistrationAsync(user.Id);
             _logger.LogInformation("User {Email} registered successfully", model.Email);
             TempData["SuccessMessage"] = "Registration successful! Please login.";
             return RedirectToAction("Login");
@@ -158,6 +159,11 @@ public class AccountController : Controller
         // Validate reCAPTCHA
         if (!await _recaptchaService.ValidateAsync(model.RecaptchaToken))
         {
+            var tempUser = await _userManager.FindByEmailAsync(model.Email);
+            if (tempUser != null)
+            {
+                await _auditLogService.LogRecaptchaFailedAsync(tempUser.Id);
+            }
             ModelState.AddModelError(string.Empty, "reCAPTCHA validation failed. Please try again.");
             return View(model);
         }
@@ -190,6 +196,7 @@ public class AccountController : Controller
 
             if (await _userManager.IsLockedOutAsync(user))
             {
+                await _auditLogService.LogAccountLockedAsync(user.Id);
                 ModelState.AddModelError(
                     string.Empty,
                     "Account has been locked due to multiple failed login attempts. Please try again in 10 minutes."
@@ -210,6 +217,7 @@ public class AccountController : Controller
         // Generate and send OTP for 2FA
         var otp = _otpService.GenerateOtp(model.Email);
         await _emailService.SendOtpAsync(model.Email, otp);
+        await _auditLogService.LogOtpGeneratedAsync(user.Id);
 
         // Store email in TempData for OTP verification
         TempData["OtpEmail"] = model.Email;
@@ -262,6 +270,11 @@ public class AccountController : Controller
         // Validate OTP
         if (!_otpService.ValidateOtp(email, model.Otp))
         {
+            var failedUser = await _userManager.FindByEmailAsync(email);
+            if (failedUser != null)
+            {
+                await _auditLogService.LogOtpFailedAsync(failedUser.Id);
+            }
             ModelState.AddModelError(string.Empty, "Invalid or expired OTP. Please try again.");
             TempData["OtpEmail"] = email;
             TempData["RememberMe"] = rememberMe;
@@ -278,6 +291,8 @@ public class AccountController : Controller
         {
             return RedirectToAction("Login");
         }
+
+        await _auditLogService.LogOtpVerifiedAsync(user.Id);
 
         // Check if password has expired (maximum password age policy)
         var maxPasswordAgeDays = _configuration.GetValue<int>("PasswordPolicy:MaxPasswordAgeDays", 90);
@@ -308,6 +323,7 @@ public class AccountController : Controller
             {
                 // Invalidate previous session
                 _sessionService.InvalidateSession(user.Id);
+                await _auditLogService.LogConcurrentLoginAsync(user.Id);
                 _logger.LogWarning("Concurrent login detected for user {Email}. Previous session invalidated.", email);
             }
         }
@@ -535,7 +551,11 @@ public class AccountController : Controller
         user.LastPasswordChangedAt = DateTime.UtcNow;
         await _userManager.UpdateAsync(user);
 
-        await _auditLogService.LogAsync(user.Id, "Password changed (forced due to expiry)");
+        await _auditLogService.LogAsync(
+            user.Id,
+            "Password changed (forced due to expiry)",
+            Entities.AuditLogSeverity.Warning
+        );
         _logger.LogInformation("User {Email} completed forced password change", email);
 
         // Now proceed with normal login flow
@@ -617,7 +637,7 @@ public class AccountController : Controller
             try
             {
                 await _emailService.SendPasswordResetEmailAsync(model.Email, resetUrl!);
-                await _auditLogService.LogAsync(user.Id, "Password reset requested");
+                await _auditLogService.LogAsync(user.Id, "Password reset requested", Entities.AuditLogSeverity.Info);
             }
             catch (Exception ex)
             {
@@ -700,7 +720,7 @@ public class AccountController : Controller
         // Invalidate reset token
         _passwordResetService.InvalidateResetToken(model.Email);
 
-        await _auditLogService.LogAsync(user.Id, "Password reset completed");
+        await _auditLogService.LogAsync(user.Id, "Password reset completed", Entities.AuditLogSeverity.Info);
 
         TempData["SuccessMessage"] = "Your password has been reset successfully! Please login with your new password.";
         return RedirectToAction("Login");
