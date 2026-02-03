@@ -1,3 +1,4 @@
+using System.Web;
 using FreshFarmMarket.Entities;
 using FreshFarmMarket.Models;
 using FreshFarmMarket.Services;
@@ -114,10 +115,10 @@ public class AccountController : Controller
             FullName = model.FullName,
             Gender = model.Gender,
             MobileNumber = model.MobileNumber,
-            DeliveryAddress = model.DeliveryAddress,
+            DeliveryAddress = HttpUtility.HtmlEncode(model.DeliveryAddress),
             CreditCardNumber = encryptedCreditCard,
             PhotoUrl = uploadResult.FilePath!,
-            AboutMe = model.AboutMe,
+            AboutMe = HttpUtility.HtmlEncode(model.AboutMe),
             LastPasswordChangedAt = DateTime.UtcNow,
             EmailConfirmed = true,
         };

@@ -147,7 +147,7 @@
                         <div class="col-12">
                             <div class="p-3 bg-light rounded">
                                 <small class="text-muted d-block mb-1"><i class="bi bi-geo-alt"></i> Delivery Address</small>
-                                <strong>@Model.DeliveryAddress</strong>
+                                <strong>@Html.Encode(Model.DeliveryAddress)</strong>
                             </div>
                         </div>
                     </div>
@@ -194,7 +194,7 @@
                     {
                         <div class="p-3 bg-light rounded">
                             @* AboutMe is already HTML-encoded in the controller to prevent XSS *@
-                            <p class="mb-0">@Model.AboutMe</p>
+                            <p class="mb-0">@Html.Encode(Model.AboutMe)</p>
                         </div>
                     }
                     else
@@ -236,13 +236,13 @@
         @if (Model.LastPasswordChangedAt.HasValue)
             {
                 <text>
-                                                                                        // Password policy timers
+                                                                                                        // Password policy timers
                     var lastPasswordChanged = new Date('@Model.LastPasswordChangedAt.Value.ToString("o")');
                     var minAgeMinutes = @Model.MinPasswordAgeMinutes;
                     var maxAgeDays = @Model.MaxPasswordAgeDays;
 
                     function updatePasswordTimers() {
-                                                                                            var now = new Date();
+                                                                                                            var now = new Date();
                     var timeSinceChange = Math.floor((now - lastPasswordChanged) / 1000); // in seconds
 
                     // Minimum age timer (countdown)
@@ -256,15 +256,15 @@
 
                     var minAgeTimerElement = document.getElementById('minAgeTimer');
                     if (minAgeTimerElement) {
-                                                                                                if (secondsUntilCanChange > 0) {
+                                                                                                                if (secondsUntilCanChange > 0) {
                         minAgeTimerElement.textContent =
                         String(minutesRemaining).padStart(2, '0') + ':' +
                         String(secondsRemaining).padStart(2, '0');
-                                                                                                } else {
+                                                                                                                } else {
                         minAgeTimerElement.parentElement.innerHTML =
                         '<small class="text-success"><i class="bi bi-check-circle-fill"></i> <strong>You can change your password now</strong></small>';
-                                                                                                }
-                                                                                            }
+                                                                                                                }
+                                                                                                            }
 
                     // Maximum age timer (days remaining)
                     var daysSinceChange = timeSinceChange / (24 * 60 * 60);
@@ -274,20 +274,20 @@
                     var progressBar = document.getElementById('maxAgeProgress');
                     progressBar.style.width = maxAgeProgress + '%';
 
-                                                                                            // Change color based on days remaining
-                                                                                            if (daysRemaining > 7) {
+                                                                                                            // Change color based on days remaining
+                                                                                                            if (daysRemaining > 7) {
                         progressBar.className = 'progress-bar bg-success';
-                                                                                            } else if (daysRemaining > 0) {
+                                                                                                            } else if (daysRemaining > 0) {
                         progressBar.className = 'progress-bar bg-warning';
-                                                                                            } else {
+                                                                                                            } else {
                         progressBar.className = 'progress-bar bg-danger';
-                                                                                            }
+                                                                                                            }
 
                     var maxAgeTimerElement = document.getElementById('maxAgeTimer');
                     if (maxAgeTimerElement) {
                         maxAgeTimerElement.textContent = Math.floor(daysRemaining) + ' days';
-                                                                                            }
-                                                                                        }
+                                                                                                            }
+                                                                                                        }
 
                     // Update timers immediately and then every second
                     updatePasswordTimers();
