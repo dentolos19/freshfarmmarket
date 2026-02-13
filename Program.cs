@@ -3,6 +3,7 @@ using FreshFarmMarket.Entities;
 using FreshFarmMarket.Services;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Resend;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -91,6 +92,14 @@ builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
 
 var app = builder.Build();
 
+// Automatically apply migrations and create database
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<AuthDbContext>();
+    context.Database.Migrate();
+}
+
 // Configure the HTTP request pipeline
 if (!app.Environment.IsDevelopment())
 {
@@ -99,7 +108,8 @@ if (!app.Environment.IsDevelopment())
 }
 
 // Custom middleware to remove security-sensitive headers
-app.Use(async (context, next) =>
+app.Use(
+    async (context, next) =>
     {
         context.Response.Headers.Remove("X-Powered-By");
         context.Response.Headers.Remove("Server");
