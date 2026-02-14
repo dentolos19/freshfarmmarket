@@ -77,14 +77,14 @@ public class AdminController : Controller
         {
             csv.AppendLine(
                 $"{log.Id},"
-                    + $"\"{log.Timestamp:yyyy-MM-dd HH:mm:ss}\","
-                    + $"\"{EscapeCsvField(log.User?.Email ?? "Unknown")}\","
-                    + $"\"{EscapeCsvField(log.Action)}\","
-                    + $"{log.Severity},"
-                    + $"\"{EscapeCsvField(log.IpAddress)}\","
-                    + $"\"{EscapeCsvField(log.UserAgent)}\","
-                    + $"\"{EscapeCsvField(log.Endpoint)}\","
-                    + $"\"{EscapeCsvField(log.AdditionalData)}\""
+                + $"\"{log.Timestamp:yyyy-MM-dd HH:mm:ss}\","
+                + $"\"{EscapeCsvField(log.User?.Email ?? "Unknown")}\","
+                + $"\"{EscapeCsvField(log.Action)}\","
+                + $"{log.Severity},"
+                + $"\"{EscapeCsvField(log.IpAddress)}\","
+                + $"\"{EscapeCsvField(log.UserAgent)}\","
+                + $"\"{EscapeCsvField(log.Endpoint)}\","
+                + $"\"{EscapeCsvField(log.AdditionalData)}\""
             );
         }
 

@@ -14,14 +14,14 @@ permissions:
   contents: read
 jobs:
   analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
     strategy:
       fail-fast: false
       matrix:
         include:
           - language: csharp
-            build: none
-    name: Analyze (${{ matrix.language }})
-    runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
+            mode: none
     steps:
       - name: Checkout Source
         uses: actions/checkout@v4
@@ -30,7 +30,7 @@ jobs:
         uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
-          build-mode: ${{ matrix.build }}
+          build-mode: ${{ matrix.mode }}
 
       - name: Perform Analysis
         uses: github/codeql-action/analyze@v4
